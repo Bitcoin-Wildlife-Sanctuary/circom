@@ -903,7 +903,7 @@ pub fn generate_fr_asm_file(c_folder: &PathBuf, prime: &String) -> std::io::Resu
         "bn128" => include_str!("bn128/fr.asm"),
         "bls12381" => include_str!("bls12381/fr.asm"),
         "goldilocks" => include_str!("goldilocks/fr.asm"),
-        "m31" => include_str!("m31/fr.asm"),
+        "m31" => "",
         "grumpkin" => include_str!("grumpkin/fr.asm"),
         "pallas" => include_str!("pallas/fr.asm"),
         "vesta" => include_str!("vesta/fr.asm"),

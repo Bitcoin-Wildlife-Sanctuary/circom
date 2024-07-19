@@ -10,3 +10,5 @@ type_analysis/target/
 .idea/
 .vscode/
 .DS_Store
+examples/multiplier2/multiplier2_cpp/*.o
+examples/multiplier2/multiplier2_cpp/multiplier2

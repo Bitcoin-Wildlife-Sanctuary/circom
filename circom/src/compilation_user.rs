@@ -33,6 +33,11 @@ pub fn compile(config: CompilerConfig) -> Result<(), ()> {
             Config { debug_output: config.debug_output, produce_input_log: config.produce_input_log, wat_flag: config.wat_flag },
             VERSION
         )?;
+
+        if config.wasm_flag && circuit.wasm_producer.prime_str == "m31" {
+            println!("M31 doesn't support WASM witness generator at this moment.");
+            return Err(());
+        }
     
         if config.c_flag {
             compiler_interface::write_c(&circuit, &config.c_folder, &config.c_run_name, &config.c_file, &config.dat_file)?;
