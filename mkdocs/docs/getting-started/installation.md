@@ -71,9 +71,7 @@ USAGE:
 FLAGS:
         --r1cs                                 Outputs the constraints in r1cs format
         --sym                                  Outputs witness in sym format
-        --wasm                                 Compiles the circuit to wasm
         --json                                 Outputs the constraints in json format
-        --wat                                  Compiles the circuit to wat
     -c, --c                                    Compiles the circuit to c
         --O0                                   No simplification is applied
         --O1                                   Only applies signal to signal and signal to constant simplification
@@ -89,7 +87,7 @@ FLAGS:
 OPTIONS:
     -o, --output <output>                    Path to the directory where the output will be written [default: .]
     -p, --prime <prime>                      To choose the prime number to use to generate the circuit. Receives the
-                                             name of the curve (bn128, bls12381, goldilocks, m31, grumpkin, secq256r1, pallas, vesta) [default: bn128]
+                                             name of the curve (m31) [default: bn128]
     -l <link_libraries>...                   Adds directory to library search path
         --O2round <simplification_rounds>    Maximum number of rounds of the simplification process
 

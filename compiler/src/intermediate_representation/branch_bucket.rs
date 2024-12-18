@@ -1,7 +1,6 @@
 use super::ir_interface::*;
 use crate::translating_traits::*;
 use code_producers::c_elements::*;
-use code_producers::wasm_elements::*;
 
 #[derive(Clone)]
 pub struct BranchBucket {
@@ -49,51 +48,6 @@ impl ToString for BranchBucket {
             "IF(line:{},template_id:{},cond:{},if:{},else{})",
             line, template_id, cond, if_body, else_body
         )
-    }
-}
-
-impl WriteWasm for BranchBucket {
-    fn produce_wasm(&self, producer: &WASMProducer) -> Vec<String> {
-        use code_producers::wasm_elements::wasm_code_generator::*;
-        let mut instructions = vec![];
-        if producer.needs_comments() {
-            instructions.push(";; branch bucket".to_string());
-	}
-        if self.if_branch.len() > 0 {
-            let mut instructions_cond = self.cond.produce_wasm(producer);
-            instructions.append(&mut instructions_cond);
-            instructions.push(call("$Fr_isTrue"));
-            instructions.push(add_if());
-            for ins in &self.if_branch {
-                let mut instructions_if = ins.produce_wasm(producer);
-                instructions.append(&mut instructions_if);
-            }
-            if self.else_branch.len() > 0 {
-                instructions.push(add_else());
-                for ins in &self.else_branch {
-                    let mut instructions_else = ins.produce_wasm(producer);
-                    instructions.append(&mut instructions_else);
-                }
-            }
-	    instructions.push(add_end());
-        } else {
-            if self.else_branch.len() > 0 {
-                let mut instructions_cond = self.cond.produce_wasm(producer);
-                instructions.append(&mut instructions_cond);
-                instructions.push(call("$Fr_isTrue"));
-                instructions.push(eqz32());
-                instructions.push(add_if());
-                for ins in &self.else_branch {
-                    let mut instructions_else = ins.produce_wasm(producer);
-                    instructions.append(&mut instructions_else);
-                }
-		instructions.push(add_end());
-            }
-        }
-        if producer.needs_comments() {
-            instructions.push(";; end of branch bucket".to_string());
-	}
-        instructions
     }
 }
 

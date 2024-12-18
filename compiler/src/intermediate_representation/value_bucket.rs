@@ -1,7 +1,6 @@
 use super::ir_interface::*;
 use crate::translating_traits::*;
 use code_producers::c_elements::*;
-use code_producers::wasm_elements::*;
 
 #[derive(Clone)]
 pub struct ValueBucket {
@@ -44,31 +43,6 @@ impl ToString for ValueBucket {
             "VALUE(line:{},template_id:{},as:{},op_number:{},value:{})",
             line, template_id, parse_as, op_aux_number, value
         )
-    }
-}
-
-impl WriteWasm for ValueBucket {
-    fn produce_wasm(&self, producer: &WASMProducer) -> Vec<String> {
-        use code_producers::wasm_elements::wasm_code_generator::*;
-        let mut instructions = vec![];
-        if producer.needs_comments() {
-            instructions.push(";; value bucket".to_string());
-	}
-        match &self.parse_as {
-            ValueType::U32 => {
-                instructions.push(set_constant(&self.value.to_string()));
-            }
-            ValueType::BigInt => {
-                let mut const_pos = self.value;
-                const_pos *= (producer.get_size_32_bit() + 2) * 4;
-                const_pos += producer.get_constant_numbers_start();
-                instructions.push(set_constant(&const_pos.to_string()));
-            }
-        }
-        if producer.needs_comments() {
-            instructions.push(";; end of value bucket".to_string());
-	}
-        instructions
     }
 }
 

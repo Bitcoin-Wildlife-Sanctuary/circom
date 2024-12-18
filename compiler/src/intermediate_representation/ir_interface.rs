@@ -7,16 +7,15 @@ pub use super::create_component_bucket::CreateCmpBucket;
 pub use super::load_bucket::LoadBucket;
 pub use super::location_rule::LocationRule;
 pub use super::log_bucket::LogBucket;
+pub use super::log_bucket::LogBucketArg;
 pub use super::loop_bucket::LoopBucket;
 pub use super::return_bucket::ReturnBucket;
 pub use super::store_bucket::StoreBucket;
-pub use super::log_bucket::LogBucketArg;
 pub use super::types::{InstrContext, ValueType};
 pub use super::value_bucket::ValueBucket;
 
 use crate::translating_traits::*;
 use code_producers::c_elements::*;
-use code_producers::wasm_elements::*;
 
 pub trait IntoInstruction {
     fn into_instruction(self) -> Instruction;
@@ -28,10 +27,6 @@ pub trait Allocate {
 pub trait ObtainMeta {
     fn get_line(&self) -> usize;
     fn get_message_id(&self) -> usize;
-}
-
-pub trait CheckCompute {
-    fn has_compute_in(&self) -> bool;
 }
 
 pub type InstructionList = Vec<InstructionPointer>;
@@ -90,37 +85,6 @@ impl ObtainMeta for Instruction {
             Assert(v) => v.get_message_id(),
             CreateCmp(v) => v.get_message_id(),
             Log(v) => v.get_message_id(),
-        }
-    }
-}
-
-impl CheckCompute for Instruction {
-    fn has_compute_in(&self) -> bool {
-        use Instruction::*;
-        match self {
-	    Load(_v) => {true
-	    },
-	    Compute(_) => true,
-	    _ => false,
-        }
-    }
-}
-
-impl WriteWasm for Instruction {
-    fn produce_wasm(&self, producer: &WASMProducer) -> Vec<String> {
-        use Instruction::*;
-        match self {
-            Value(v) => v.produce_wasm(producer),
-            Load(v) => v.produce_wasm(producer),
-            Store(v) => v.produce_wasm(producer),
-            Compute(v) => v.produce_wasm(producer),
-            Call(v) => v.produce_wasm(producer),
-            Branch(v) => v.produce_wasm(producer),
-            Return(v) => v.produce_wasm(producer),
-            Loop(v) => v.produce_wasm(producer),
-            Assert(v) => v.produce_wasm(producer),
-            CreateCmp(v) => v.produce_wasm(producer),
-            Log(v) => v.produce_wasm(producer),
         }
     }
 }

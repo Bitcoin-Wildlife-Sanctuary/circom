@@ -4,10 +4,9 @@ use crate::circuit_design::template::TemplateCodeInfo;
 use crate::hir::very_concrete_program::*;
 use crate::intermediate_representation::translate;
 use crate::intermediate_representation::translate::{
-    CodeInfo, FieldTracker, TemplateDB, ParallelClusters,
+    CodeInfo, FieldTracker, ParallelClusters, TemplateDB,
 };
 use code_producers::c_elements::*;
-use code_producers::wasm_elements::*;
 use program_structure::file_definition::FileLibrary;
 use std::collections::{BTreeMap, HashMap};
 
@@ -55,7 +54,7 @@ fn build_template_instances(
             let xtype = cluster.xtype.clone();
             cmp_to_type.insert(name, xtype);
         }
-        circuit.wasm_producer.message_list.push(msg);
+        circuit.c_producer.message_list.push(msg);
         circuit.c_producer.has_parallelism |=
             template.is_parallel || template.is_parallel_component;
 
@@ -146,8 +145,8 @@ fn build_function_instances(
         let name = instance.name;
         let params = instance.params_types;
         let returns = instance.return_type;
-        let id = circuit.wasm_producer.message_list.len();
-        circuit.wasm_producer.message_list.push(msg);
+        let id = circuit.c_producer.message_list.len();
+        circuit.c_producer.message_list.push(msg);
         let code_info = CodeInfo {
             field_tracker,
             header: header.clone(),
@@ -187,61 +186,6 @@ fn build_function_instances(
     (field_tracker, function_to_arena_size, string_table)
 }
 
-// WASM producer builder
-fn initialize_wasm_producer(
-    vcp: &VCP,
-    database: &TemplateDB,
-    wat_flag: bool,
-    version: &str,
-) -> WASMProducer {
-    use program_structure::utils::constants::UsefulConstants;
-    let initial_node = vcp.get_main_id();
-    let prime = UsefulConstants::new(&vcp.prime).get_p().clone();
-    let mut producer = WASMProducer::default();
-    let stats = vcp.get_stats();
-    producer.main_header = vcp.get_main_instance().unwrap().template_header.clone();
-    producer.main_signal_offset = 1;
-    producer.prime = prime.to_str_radix(10);
-    producer.prime_str = vcp.prime.clone();
-    producer.fr_memory_size = match vcp.prime.as_str() {
-        "goldilocks" => 412,
-        "m31" => 100,
-        "bn128" => 1948,
-        "bls12381" => 1948,
-        "grumpkin" => 1948,
-        "pallas" => 1948,
-        "vesta" => 1948,
-        "secq256r1" => 1948,
-        _ => unreachable!(),
-    };
-    //producer.fr_memory_size = 412 if goldilocks and 1948 for bn128 and bls12381
-    // for each created component we store three u32, for each son we store a u32 in its father
-    producer.size_of_component_tree =
-        stats.all_created_components * 3 + stats.all_needed_subcomponents_indexes;
-    producer.total_number_of_signals = stats.all_signals + 1;
-    producer.size_32_bit = prime.bits() / 32 + if prime.bits() % 32 != 0 { 1 } else { 0 };
-    producer.size_32_shift = 0;
-    let mut pow = 1;
-    while pow < producer.size_32_bit {
-        pow *= 2;
-        producer.size_32_shift += 1;
-    }
-    producer.size_32_shift += 2;
-    producer.number_of_components = stats.all_created_components;
-    producer.witness_to_signal_list = vcp.get_witness_list().clone();
-    producer.signals_in_witness = producer.witness_to_signal_list.len();
-    producer.number_of_main_inputs = vcp.templates[initial_node].number_of_inputs;
-    producer.number_of_main_outputs = vcp.templates[initial_node].number_of_outputs;
-    producer.main_input_list = main_input_list(&vcp.templates[initial_node]);
-    producer.io_map = build_io_map(vcp, database);
-    producer.template_instance_list = build_template_list(vcp);
-    producer.field_tracking.clear();
-    producer.wat_flag = wat_flag;
-    (producer.major_version, producer.minor_version, producer.patch_version) =
-        get_number_version(version);
-    producer
-}
-
 fn initialize_c_producer(vcp: &VCP, database: &TemplateDB, version: &str) -> CProducer {
     use program_structure::utils::constants::UsefulConstants;
     let initial_node = vcp.get_main_id();
@@ -272,8 +216,11 @@ fn initialize_c_producer(vcp: &VCP, database: &TemplateDB, version: &str) -> CPr
     producer.io_map = build_io_map(vcp, database);
     producer.template_instance_list = build_template_list_parallel(vcp);
     producer.field_tracking.clear();
-    (producer.major_version, producer.minor_version, producer.patch_version) =
-        get_number_version(version);
+    (
+        producer.major_version,
+        producer.minor_version,
+        producer.patch_version,
+    ) = get_number_version(version);
     producer
 }
 
@@ -380,8 +327,6 @@ pub fn build_circuit(vcp: VCP, flag: CompilationFlags, version: &str) -> Circuit
     }
     let template_database = TemplateDB::build(&vcp.templates);
     let mut circuit = Circuit::default();
-    circuit.wasm_producer =
-        initialize_wasm_producer(&vcp, &template_database, flag.wat_flag, version);
     circuit.c_producer = initialize_c_producer(&vcp, &template_database, version);
 
     let field_tracker = FieldTracker::new();
@@ -402,11 +347,9 @@ pub fn build_circuit(vcp: VCP, flag: CompilationFlags, version: &str) -> Circuit
     );
 
     let table_usize_to_string = create_table_usize_to_string(table_string_to_usize);
-    circuit.wasm_producer.set_string_table(table_usize_to_string.clone());
     circuit.c_producer.set_string_table(table_usize_to_string);
     for i in 0..field_tracker.next_id() {
         let constant = field_tracker.get_constant(i).unwrap().clone();
-        circuit.wasm_producer.field_tracking.push(constant.clone());
         circuit.c_producer.field_tracking.push(constant);
     }
     for fun in &mut circuit.functions {
