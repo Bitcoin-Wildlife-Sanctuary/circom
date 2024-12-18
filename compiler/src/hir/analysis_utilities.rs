@@ -7,7 +7,6 @@ use std::collections::HashMap;
 pub type E = VarEnvironment<VCT>;
 
 pub struct GenericFunction {
-    pub name: String,
     pub params_names: Vec<String>,
     pub body: Statement,
     pub concrete_instances: Vec<usize>,
@@ -26,7 +25,6 @@ pub fn build_function_knowledge(program: ProgramArchive) -> State {
     for f in function_info.values() {
         let name = f.get_name().to_string();
         let gen_function = GenericFunction {
-            name: name.clone(),
             params_names: f.get_name_of_params().clone(),
             body: f.get_body().clone(),
             concrete_instances: Vec::new(),
@@ -54,7 +52,6 @@ pub fn build_component_info(triggers: &Vec<Trigger>) -> HashMap<String, HashMap<
             Some(old) => max_vct(signals, old),
         };
         external_signals.insert(trigger.component_name.clone(), signals);
-
     }
     external_signals
 }
@@ -66,11 +63,11 @@ fn max_vct(l: HashMap<String, VCT>, mut r: HashMap<String, VCT>) -> HashMap<Stri
             let tr = r.remove(&s).unwrap();
             let max = std::cmp::max(tl, tr);
             result.insert(s, max);
-        } else{
+        } else {
             result.insert(s, tl);
         }
     }
-    for (s, tr) in r{
+    for (s, tr) in r {
         result.insert(s, tr);
     }
     result

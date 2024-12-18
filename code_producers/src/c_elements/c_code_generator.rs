@@ -36,7 +36,10 @@ const G_TEMPLATE_MESSAGES: &str = "listOfTemplateMessages"; // type string[T]
 // Local to functions
 pub const L_INTERMEDIATE_COMPUTATIONS_STACK: &str = "expaux"; // type PFrElements[]
 pub fn declare_expaux(size: usize) -> CInstruction {
-    format!("{} {}[{}]", T_FR_ELEMENT, L_INTERMEDIATE_COMPUTATIONS_STACK, size)
+    format!(
+        "{} {}[{}]",
+        T_FR_ELEMENT, L_INTERMEDIATE_COMPUTATIONS_STACK, size
+    )
 }
 pub fn expaux(at: CInstruction) -> CInstruction {
     format!("{}[{}]", L_INTERMEDIATE_COMPUTATIONS_STACK, at)
@@ -165,7 +168,11 @@ pub fn declare_my_template_name() -> CInstruction {
     )
 }
 pub fn declare_my_template_name_function(name: &String) -> CInstruction {
-    format!("std::string {} = \"{}\"", MY_TEMPLATE_NAME, name.to_string())
+    format!(
+        "std::string {} = \"{}\"",
+        MY_TEMPLATE_NAME,
+        name.to_string()
+    )
 }
 pub fn my_template_name() -> CInstruction {
     format!("{}", MY_TEMPLATE_NAME)
@@ -184,7 +191,10 @@ pub fn my_component_name() -> CInstruction {
 
 pub const MY_FATHER: &str = "myFather";
 pub fn declare_my_father() -> CInstruction {
-    format!("u64 {} = {}->componentMemory[{}].idFather", MY_FATHER, CIRCOM_CALC_WIT, CTX_INDEX)
+    format!(
+        "u64 {} = {}->componentMemory[{}].idFather",
+        MY_FATHER, CIRCOM_CALC_WIT, CTX_INDEX
+    )
 }
 pub fn my_father() -> CInstruction {
     format!("{}", MY_FATHER)
@@ -210,7 +220,10 @@ pub fn function_table_parallel() -> CInstruction {
 
 pub const SIGNAL_VALUES: &str = "signalValues";
 pub fn declare_signal_values() -> CInstruction {
-    format!("FrElement* {} = {}->{}", SIGNAL_VALUES, CIRCOM_CALC_WIT, SIGNAL_VALUES)
+    format!(
+        "FrElement* {} = {}->{}",
+        SIGNAL_VALUES, CIRCOM_CALC_WIT, SIGNAL_VALUES
+    )
 }
 pub fn signal_values(at: CInstruction) -> CInstruction {
     format!("{}[{} + {}]", SIGNAL_VALUES, MY_SIGNAL_START, at)
@@ -298,7 +311,10 @@ pub fn my_subcomponents_parallel() -> CInstruction {
 
 pub const CIRCUIT_CONSTANTS: &str = "circuitConstants";
 pub fn declare_circuit_constants() -> CInstruction {
-    format!("FrElement* {} = {}->{}", CIRCUIT_CONSTANTS, CIRCOM_CALC_WIT, CIRCUIT_CONSTANTS)
+    format!(
+        "FrElement* {} = {}->{}",
+        CIRCUIT_CONSTANTS, CIRCOM_CALC_WIT, CIRCUIT_CONSTANTS
+    )
 }
 pub fn circuit_constants(at: CInstruction) -> CInstruction {
     format!("{}[{}]", CIRCUIT_CONSTANTS, at)
@@ -309,7 +325,10 @@ pub fn store_circuit_constants(at: CInstruction, value: CInstruction) -> CInstru
 pub const FREE_IN_COMPONENT_MEM_MUTEX: &str = "freePositionInComponentMemoryMutex"; // type u32
 pub const FREE_IN_COMPONENT_MEM: &str = "freePositionInComponentMemory"; // type u32
 pub fn declare_free_position_in_component_memory() -> CInstruction {
-    format!("u32 {} = {}->{}", FREE_IN_COMPONENT_MEM, CIRCOM_CALC_WIT, FREE_IN_COMPONENT_MEM)
+    format!(
+        "u32 {} = {}->{}",
+        FREE_IN_COMPONENT_MEM, CIRCOM_CALC_WIT, FREE_IN_COMPONENT_MEM
+    )
 }
 pub fn free_position_in_component_memory() -> CInstruction {
     format!("{}", FREE_IN_COMPONENT_MEM)
@@ -477,7 +496,11 @@ pub fn generate_hash_map(
         while hash_map[p].1 != 0 {
             p = (p + 1) % size;
         }
-        hash_map[p] = (h, signal_name_list[i].1 as u64, signal_name_list[i].2 as u64);
+        hash_map[p] = (
+            h,
+            signal_name_list[i].1 as u64,
+            signal_name_list[i].2 as u64,
+        );
     }
     hash_map
 }
@@ -811,14 +834,7 @@ pub fn generate_fr_hpp_file(c_folder: &PathBuf, prime: &String) -> std::io::Resu
     let mut c_file = BufWriter::new(File::create(file_name).unwrap());
     let mut code = "".to_string();
     let file = match prime.as_ref() {
-        "bn128" => include_str!("bn128/fr.hpp"),
-        "bls12381" => include_str!("bls12381/fr.hpp"),
-        "goldilocks" => include_str!("goldilocks/fr.hpp"),
         "m31" => include_str!("m31/fr.hpp"),
-        "grumpkin" => include_str!("grumpkin/fr.hpp"),
-        "pallas" => include_str!("pallas/fr.hpp"),
-        "vesta" => include_str!("vesta/fr.hpp"),
-        "secq256r1" => include_str!("secq256r1/fr.hpp"),
         _ => unreachable!(),
     };
     for line in file.lines() {
@@ -855,15 +871,7 @@ pub fn generate_fr_cpp_file(c_folder: &PathBuf, prime: &String) -> std::io::Resu
     let mut c_file = BufWriter::new(File::create(file_name).unwrap());
     let mut code = "".to_string();
     let file = match prime.as_ref() {
-        "bn128" => include_str!("bn128/fr.cpp"),
-        "bls12381" => include_str!("bls12381/fr.cpp"),
-        "goldilocks" => include_str!("goldilocks/fr.cpp"),
         "m31" => include_str!("m31/fr.cpp"),
-        "grumpkin" => include_str!("grumpkin/fr.cpp"),
-        "pallas" => include_str!("pallas/fr.cpp"),
-        "vesta" => include_str!("vesta/fr.cpp"),
-        "secq256r1" => include_str!("secq256r1/fr.cpp"),
-
         _ => unreachable!(),
     };
     for line in file.lines() {
@@ -883,33 +891,6 @@ pub fn generate_calcwit_cpp_file(c_folder: &PathBuf) -> std::io::Result<()> {
     let mut c_file = BufWriter::new(File::create(file_name).unwrap());
     let mut code = "".to_string();
     let file = include_str!("common/calcwit.cpp");
-    for line in file.lines() {
-        code = format!("{}{}\n", code, line);
-    }
-    c_file.write_all(code.as_bytes())?;
-    c_file.flush()?;
-    Ok(())
-}
-
-pub fn generate_fr_asm_file(c_folder: &PathBuf, prime: &String) -> std::io::Result<()> {
-    use std::io::BufWriter;
-    let mut file_path = c_folder.clone();
-    file_path.push("fr");
-    file_path.set_extension("asm");
-    let file_name = file_path.to_str().unwrap();
-    let mut c_file = BufWriter::new(File::create(file_name).unwrap());
-    let mut code = "".to_string();
-    let file = match prime.as_ref() {
-        "bn128" => include_str!("bn128/fr.asm"),
-        "bls12381" => include_str!("bls12381/fr.asm"),
-        "goldilocks" => include_str!("goldilocks/fr.asm"),
-        "m31" => "",
-        "grumpkin" => include_str!("grumpkin/fr.asm"),
-        "pallas" => include_str!("pallas/fr.asm"),
-        "vesta" => include_str!("vesta/fr.asm"),
-        "secq256r1" => include_str!("secq256r1/fr.asm"),
-        _ => unreachable!(),
-    };
     for line in file.lines() {
         code = format!("{}{}\n", code, line);
     }
@@ -976,7 +957,10 @@ pub fn generate_c_file(name: String, producer: &CProducer) -> std::io::Result<()
         func_list_parallel,
     ));
 
-    code.push(format!("uint get_size_of_input_hashmap() {{return {};}}\n", len));
+    code.push(format!(
+        "uint get_size_of_input_hashmap() {{return {};}}\n",
+        len
+    ));
     code.push(format!(
         "uint get_size_of_witness() {{return {};}}\n",
         producer.get_witness_to_signal_list().len()
@@ -985,7 +969,10 @@ pub fn generate_c_file(name: String, producer: &CProducer) -> std::io::Result<()
         "uint get_size_of_constants() {{return {};}}\n",
         producer.get_field_constant_list().len()
     ));
-    code.push(format!("uint get_size_of_io_map() {{return {};}}\n", producer.get_io_map().len()));
+    code.push(format!(
+        "uint get_size_of_io_map() {{return {};}}\n",
+        producer.get_io_map().len()
+    ));
 
     // let mut ml_def = generate_message_list_def(producer, producer.get_message_list());
     // code.append(&mut ml_def);
