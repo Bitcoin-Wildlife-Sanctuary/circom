@@ -19,7 +19,9 @@ pub fn free_of_returns(template_data: &TemplateData) -> Result<(), ReportCollect
 fn look_for_return(stmt: &Statement, file_id: FileID, reports: &mut ReportCollection) {
     use Statement::*;
     match stmt {
-        IfThenElse { if_case, else_case, .. } => {
+        IfThenElse {
+            if_case, else_case, ..
+        } => {
             look_for_return(if_case, file_id, reports);
             if let Option::Some(else_block) = else_case {
                 look_for_return(else_block, file_id, reports);

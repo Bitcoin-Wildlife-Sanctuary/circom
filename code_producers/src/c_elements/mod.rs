@@ -2,6 +2,11 @@ pub mod c_code_generator;
 
 pub use crate::components::*;
 
+pub fn merge_code(instructions: Vec<String>) -> String {
+    let code = format!("{}\n", instructions.join("\n"));
+    code
+}
+
 pub type CInstruction = String;
 pub struct CProducer {
     pub main_header: String,
@@ -38,24 +43,56 @@ impl Default for CProducer {
         my_map.insert(
             0,
             vec![
-                IODef { code: 0, offset: 0, lengths: [2, 3].to_vec() },
-                IODef { code: 1, offset: 6, lengths: [].to_vec() },
-                IODef { code: 2, offset: 7, lengths: [2].to_vec() },
+                IODef {
+                    code: 0,
+                    offset: 0,
+                    lengths: [2, 3].to_vec(),
+                },
+                IODef {
+                    code: 1,
+                    offset: 6,
+                    lengths: [].to_vec(),
+                },
+                IODef {
+                    code: 2,
+                    offset: 7,
+                    lengths: [2].to_vec(),
+                },
             ],
         );
         my_map.insert(
             1,
             vec![
-                IODef { code: 0, offset: 0, lengths: [3].to_vec() },
-                IODef { code: 1, offset: 3, lengths: [4, 8, 6].to_vec() },
+                IODef {
+                    code: 0,
+                    offset: 0,
+                    lengths: [3].to_vec(),
+                },
+                IODef {
+                    code: 1,
+                    offset: 3,
+                    lengths: [4, 8, 6].to_vec(),
+                },
             ],
         );
         my_map.insert(
             2,
             vec![
-                IODef { code: 0, offset: 0, lengths: [].to_vec() },
-                IODef { code: 1, offset: 1, lengths: [4].to_vec() },
-                IODef { code: 2, offset: 5, lengths: [2, 6].to_vec() },
+                IODef {
+                    code: 0,
+                    offset: 0,
+                    lengths: [].to_vec(),
+                },
+                IODef {
+                    code: 1,
+                    offset: 1,
+                    lengths: [4].to_vec(),
+                },
+                IODef {
+                    code: 2,
+                    offset: 5,
+                    lengths: [2, 6].to_vec(),
+                },
             ],
         );
         CProducer {
@@ -74,8 +111,12 @@ impl Default for CProducer {
                 0, 1, 2, 3, 4, 5, 6, 12, 16, 19, 24, 27, 33, 42, 46, 50, 51, 65, 78, 79,
             ]
             .to_vec(), //[].to_vec(),
-            message_list: ["Main".to_string(), "Hola Herme".to_string(), "Hola Albert".to_string()]
-                .to_vec(), //[].to_vec(),
+            message_list: [
+                "Main".to_string(),
+                "Hola Herme".to_string(),
+                "Hola Albert".to_string(),
+            ]
+            .to_vec(), //[].to_vec(),
             field_tracking: [
                 "1884242871839275222246405745257275088548364400416034343698204186575808495617"
                     .to_string(),
@@ -126,7 +167,7 @@ impl CProducer {
         &self.prime
     }
     pub fn get_number_of_main_outputs(&self) -> usize {
-        self.number_of_main_outputs+1
+        self.number_of_main_outputs + 1
     }
     pub fn get_number_of_main_inputs(&self) -> usize {
         self.number_of_main_inputs
@@ -135,8 +176,11 @@ impl CProducer {
         &self.main_input_list
     }
     pub fn get_input_hash_map_entry_size(&self) -> usize {
-        std::cmp::max(usize::pow(2,(self.main_input_list.len() as f32).log2().ceil() as u32),256)
-    }    
+        std::cmp::max(
+            usize::pow(2, (self.main_input_list.len() as f32).log2().ceil() as u32),
+            256,
+        )
+    }
     pub fn get_number_of_witness(&self) -> usize {
         self.signals_in_witness
     }
