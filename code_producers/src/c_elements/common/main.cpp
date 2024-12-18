@@ -216,14 +216,14 @@ void writeBinWitness(Circom_CalcWit *ctx, std::string wtnsFileName) {
     u32 idSection1 = 1;
     fwrite(&idSection1, 4, 1, write_ptr);
 
-    u32 n8 = Fr_N64*8;
+    u32 n8 = Fr_N32*4;
 
     u64 idSection1length = 8 + n8;
     fwrite(&idSection1length, 8, 1, write_ptr);
 
     fwrite(&n8, 4, 1, write_ptr);
 
-    fwrite(Fr_q.longVal, Fr_N64*8, 1, write_ptr);
+    fwrite(Fr_q.longVal, Fr_N32*4, 1, write_ptr);
 
     uint Nwtns = get_size_of_witness();
     
@@ -242,7 +242,7 @@ void writeBinWitness(Circom_CalcWit *ctx, std::string wtnsFileName) {
     for (int i=0;i<Nwtns;i++) {
         ctx->getWitness(i, &v);
         Fr_toLongNormal(&v, &v);
-        fwrite(v.longVal, Fr_N64*8, 1, write_ptr);
+        fwrite(v.longVal, Fr_N32*4, 1, write_ptr);
     }
     fclose(write_ptr);
 }

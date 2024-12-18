@@ -16,41 +16,41 @@ void Fr_copyn(PFrElement r, PFrElement a, int n) {
 }
 
 void Fr_add(PFrElement r, PFrElement a, PFrElement b) {
-    r->longVal[0] = (a->longVal[0] + b->longVal[0]) % MOD;
+    r->longVal[0] = (uint32_t)((((uint64_t)a->longVal[0]) + ((uint64_t)b->longVal[0])) % MOD);
 }
 
 void Fr_sub(PFrElement r, PFrElement a, PFrElement b) {
-    r->longVal[0] = (MOD + a->longVal[0] - b->longVal[0]) % MOD;
+    r->longVal[0] = (uint32_t)((MOD + (uint64_t)(a->longVal[0]) - (uint64_t)(b->longVal[0])) % MOD);
 }
 
 void Fr_neg(PFrElement r, PFrElement a) {
-    r->longVal[0] = (MOD - a->longVal[0]) % MOD;
+    r->longVal[0] = (uint32_t)((MOD - (uint64_t)(a->longVal[0])) % MOD);
 }
 
 void Fr_mul(PFrElement r, PFrElement a, PFrElement b) {
-    r->longVal[0] = (uint32_t) (a->longVal[0] * b->longVal[0] % MOD);
+    r->longVal[0] = (uint32_t) ((uint64_t)(a->longVal[0]) * (uint64_t)(b->longVal[0]) % MOD);
 }
 
 void Fr_band(PFrElement r, PFrElement a, PFrElement b) {
-    r->longVal[0] = (a->longVal[0] & b->longVal[0]) % MOD;
+    r->longVal[0] = a->longVal[0] & b->longVal[0];
 }
 
 void Fr_bor(PFrElement r, PFrElement a, PFrElement b) {
-    r->longVal[0] = (a->longVal[0] | b->longVal[0]) % MOD;
+    r->longVal[0] = a->longVal[0] | b->longVal[0];
 }
 
 void Fr_bxor(PFrElement r, PFrElement a, PFrElement b) {
-    r->longVal[0] = (a->longVal[0] ^ b->longVal[0]) % MOD;
+    r->longVal[0] = a->longVal[0] ^ b->longVal[0];
 }
 
 void Fr_bnot(PFrElement r, PFrElement a) {
-    r->longVal[0] = (~a->longVal[0]) % MOD;
+    r->longVal[0] = ~a->longVal[0];
 }
 
 void Fr_shl(PFrElement r, PFrElement a, PFrElement b) {
     r->longVal[0] = a->longVal[0];
     for(int i = 0; i < b->longVal[0]; i++) {
-        r->longVal[0] = (r->longVal[0] << 1) % MOD;
+        r->longVal[0] = (uint32_t)(((uint64_t)(r->longVal[0]) << 1) % MOD);
     }
 }
 
@@ -150,7 +150,7 @@ int Fr_toInt(PFrElement pE) {
 }
 
 void Fr_fromMpz(PFrElement pE, mpz_t v) {
-    pE->longVal[0] = mpz_get_si(v) % MOD;
+    pE->longVal[0] = (uint32_t)(mpz_get_si(v) % MOD);
 }
 
 void Fr_str2element(PFrElement pE, char const *s, unsigned int base) {

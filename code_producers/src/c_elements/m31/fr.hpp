@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define Fr_N64 1
-typedef uint64_t FrRawElement[1];
+#define Fr_N32 1
+typedef uint32_t FrRawElement[1];
 typedef struct {
     FrRawElement longVal;
 } FrElement;
