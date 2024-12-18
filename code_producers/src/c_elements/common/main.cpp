@@ -88,7 +88,7 @@ Circom_Circuit* loadCircuit(std::string const &datFileName) {
 	templateInsId2IOSignalInfo1[index[i]] = p;
       }
     }
-    circuit->templateInsId2IOSignalInfo = move(templateInsId2IOSignalInfo1);
+    circuit->templateInsId2IOSignalInfo = std::move(templateInsId2IOSignalInfo1);
     
     munmap(bdata, sb.st_size);
     
