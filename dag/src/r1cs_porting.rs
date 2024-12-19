@@ -7,9 +7,9 @@ use constraint_writers::r1cs_writer::{
 pub fn write(dag: &DAG, output: &str, custom_gates: bool) -> Result<(), ()> {
     let tree = Tree::new(dag);
     let field_size = if tree.field.bits() % 64 == 0 {
-        tree.field.bits() / 8
+        tree.field.bits() / 4
     } else {
-        (tree.field.bits() / 64 + 1) * 8
+        (tree.field.bits() / 32 + 1) * 4
     };
     let mut log = Log::new();
     let r1cs = R1CSWriter::new(output.to_string(), field_size, custom_gates)?;

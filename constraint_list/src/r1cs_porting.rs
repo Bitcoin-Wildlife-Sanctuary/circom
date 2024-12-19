@@ -5,10 +5,10 @@ use constraint_writers::r1cs_writer::{
 
 pub fn port_r1cs(list: &ConstraintList, output: &str, custom_gates: bool) -> Result<(), ()> {
     use constraint_writers::log_writer::Log;
-    let field_size = if list.field.bits() % 64 == 0 {
-        list.field.bits() / 8
+    let field_size = if list.field.bits() % 32 == 0 {
+        list.field.bits() / 4
     } else {
-        (list.field.bits() / 64 + 1) * 8
+        (list.field.bits() / 32 + 1) * 4
     };
     let mut log = Log::new();
     log.no_labels = ConstraintList::no_labels(list);
