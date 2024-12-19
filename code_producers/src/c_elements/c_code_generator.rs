@@ -1,7 +1,7 @@
 use super::*;
 use num_bigint_dig::{BigInt, Sign};
 use serde_json::json;
-use std::fs::File;
+use std::fs::{create_dir, File};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
@@ -883,8 +883,12 @@ pub fn generate_findgmp_file(c_folder: &PathBuf) -> std::io::Result<()> {
 
     let code: &str = include_str!("common/cmake/FindGMP.cmake");
 
-    let mut file_path = c_folder.clone();
-    file_path.push("cmake/FindGMP.cmake");
+    let mut folder_path = c_folder.clone();
+    folder_path.push("cmake");
+    create_dir(folder_path.clone()).expect("must create folder");
+
+    let mut file_path = folder_path.clone();
+    file_path.push("FindGMP.cmake");
     let file_name = file_path.to_str().unwrap();
     let mut c_file = BufWriter::new(File::create(file_name).unwrap());
     c_file.write_all(code.as_bytes())?;
