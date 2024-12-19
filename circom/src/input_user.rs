@@ -250,7 +250,7 @@ mod input_processing {
             }
 
             (false, false, false, true) => Ok(SimplificationStyle::O2(usize::MAX)),
-            (false, false, false, false) => Ok(SimplificationStyle::O2(usize::MAX)),
+            (false, false, false, false) => Ok(SimplificationStyle::O1),
         }
     }
 
