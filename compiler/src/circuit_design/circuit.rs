@@ -339,8 +339,8 @@ impl Circuit {
         c_code_generator::generate_fr_cpp_file(&c_folder_path, &self.c_producer.prime_str)
             .map_err(|_err| {})?;
         c_code_generator::generate_calcwit_cpp_file(&c_folder_path).map_err(|_err| {})?;
-        c_code_generator::generate_make_file(&c_folder_path, run_name, &self.c_producer)
-            .map_err(|_err| {})?;
+        c_code_generator::generate_cmake_file(&c_folder_path, run_name).map_err(|_err| {})?;
+        c_code_generator::generate_findgmp_file(&c_folder_path).map_err(|_err| {})?;
         c_code_generator::generate_dat_file(c_dat, &self.c_producer).map_err(|_err| {})?;
         self.write_c(c_circuit, &self.c_producer)
     }

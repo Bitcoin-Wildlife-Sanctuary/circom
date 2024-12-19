@@ -1,7 +1,7 @@
 use super::*;
 use num_bigint_dig::{BigInt, Sign};
 use serde_json::json;
-use std::fs::File;
+use std::fs::{create_dir, File};
 use std::io::prelude::*;
 use std::path::PathBuf;
 
@@ -535,62 +535,17 @@ pub fn generate_dat_witness_to_signal_list(signal_list: &Vec<usize>) -> Vec<u8> 
 pub fn generate_dat_constant_list(producer: &CProducer, constant_list: &Vec<String>) -> Vec<u8> {
     let mut constant_list_data = vec![];
     for s in constant_list {
-        //      For sort/long or short/montgomery
         let mut n = s.parse::<BigInt>().unwrap();
-        let min_int = BigInt::from(-2147483648);
-        let max_int = BigInt::from(2147483647);
         let p = producer.get_prime().parse::<BigInt>().unwrap();
-        let b = ((p.bits() + 63) / 64) * 64;
-        let mut r = BigInt::from(1);
-        r = r << b;
-        n = n % BigInt::clone(&p);
-        n = n + BigInt::clone(&p);
-        n = n % BigInt::clone(&p);
-        let hp = BigInt::clone(&p) / 2;
-        let mut nn;
-        if BigInt::clone(&n) > hp {
-            nn = BigInt::clone(&n) - BigInt::clone(&p);
-        } else {
-            nn = BigInt::clone(&n);
+        if n < BigInt::from(0) {
+            n = p + n;
         }
-
-        if min_int <= nn && nn <= max_int {
-            // It is short. We have it in short & Montgomery
-            if nn < BigInt::from(0) {
-                nn = BigInt::parse_bytes(b"100000000", 16).unwrap() + nn;
-            }
-            let (snn, bnn) = nn.to_bytes_be();
-            assert_ne!(snn, Sign::Minus);
-            let mut v: Vec<u8> = bnn.to_vec();
-            v.reverse();
-            constant_list_data.append(&mut v);
-            for _i in 0..4 - bnn.len() {
-                constant_list_data.push(0);
-            }
-            //short Montgomery
-            let sm = 0x40000000 as u32;
-            let mut v: Vec<u8> = sm.to_be_bytes().to_vec();
-            v.reverse();
-            constant_list_data.append(&mut v);
-        } else {
-            //It is long. Only Montgomery
-            for _i in 0..4 {
-                constant_list_data.push(0);
-            }
-            let lm = 0xC0000000 as u32;
-            let mut v: Vec<u8> = lm.to_be_bytes().to_vec();
-            v.reverse();
-            constant_list_data.append(&mut v);
-        }
-        // Montgomery
-        // n*R mod P
-        n = (n * BigInt::clone(&r)) % BigInt::clone(&p);
-        let (sn, bn) = n.to_bytes_be();
-        assert_ne!(sn, Sign::Minus);
-        let mut v: Vec<u8> = bn.to_vec();
+        let (snn, bnn) = n.to_bytes_be();
+        assert_ne!(snn, Sign::Minus);
+        let mut v: Vec<u8> = bnn.to_vec();
         v.reverse();
         constant_list_data.append(&mut v);
-        for _i in 0..(producer.get_size_32_bit() * 4) - bn.len() {
+        for _i in 0..4 - bnn.len() {
             constant_list_data.push(0);
         }
     }
@@ -899,14 +854,10 @@ pub fn generate_calcwit_cpp_file(c_folder: &PathBuf) -> std::io::Result<()> {
     Ok(())
 }
 
-pub fn generate_make_file(
-    c_folder: &PathBuf,
-    run_name: &str,
-    producer: &CProducer,
-) -> std::io::Result<()> {
+pub fn generate_cmake_file(c_folder: &PathBuf, run_name: &str) -> std::io::Result<()> {
     use std::io::BufWriter;
 
-    let makefile_template: &str = include_str!("common/makefile");
+    let makefile_template: &str = include_str!("common/CMakeLists.txt");
 
     let template = handlebars::Handlebars::new();
     let code = template
@@ -914,13 +865,30 @@ pub fn generate_make_file(
             makefile_template,
             &json!({
                 "run_name": run_name,
-                "has_parallelism": producer.has_parallelism,
             }),
         )
         .expect("must render");
 
     let mut file_path = c_folder.clone();
-    file_path.push("Makefile");
+    file_path.push("CMakeLists.txt");
+    let file_name = file_path.to_str().unwrap();
+    let mut c_file = BufWriter::new(File::create(file_name).unwrap());
+    c_file.write_all(code.as_bytes())?;
+    c_file.flush()?;
+    Ok(())
+}
+
+pub fn generate_findgmp_file(c_folder: &PathBuf) -> std::io::Result<()> {
+    use std::io::BufWriter;
+
+    let code: &str = include_str!("common/cmake/FindGMP.cmake");
+
+    let mut folder_path = c_folder.clone();
+    folder_path.push("cmake");
+    create_dir(folder_path.clone()).expect("must create folder");
+
+    let mut file_path = folder_path.clone();
+    file_path.push("FindGMP.cmake");
     let file_name = file_path.to_str().unwrap();
     let mut c_file = BufWriter::new(File::create(file_name).unwrap());
     c_file.write_all(code.as_bytes())?;
