@@ -3,10 +3,14 @@ use compiler::hir::very_concrete_program::VCP;
 use constraint_writers::debug_writer::DebugWriter;
 use constraint_writers::ConstraintExporter;
 use program_structure::program_archive::ProgramArchive;
+use serde::Serialize;
+use std::fs::File;
+use std::io::Write;
 
 pub struct ExecutionConfig {
     pub r1cs: String,
     pub sym: String,
+    pub input_map: String,
     pub json_constraints: String,
     pub json_substitutions: String,
     pub no_rounds: usize,
@@ -18,6 +22,7 @@ pub struct ExecutionConfig {
     pub inspect_constraints_flag: bool,
     pub sym_flag: bool,
     pub r1cs_flag: bool,
+    pub input_map_flag: bool,
     pub json_substitution_flag: bool,
     pub json_constraint_flag: bool,
     pub prime: String,
@@ -51,6 +56,9 @@ pub fn execute_project(
     }
     if config.json_constraint_flag {
         generate_json_constraints(&debug, exporter.as_ref())?;
+    }
+    if config.input_map_flag {
+        generate_input_map(&config.input_map, &vcp)?;
     }
     Result::Ok(vcp)
 }
@@ -102,5 +110,38 @@ fn generate_json_constraints(
             Colour::Red.paint("Could not write the output in the given path")
         );
         Result::Err(())
+    }
+}
+
+fn generate_input_map(file: &str, vcp: &VCP) -> Result<(), ()> {
+    let f = |file, vcp: &VCP| {
+        #[derive(Serialize)]
+        pub struct InputMap(pub Vec<(String, usize, usize)>);
+
+        let initial_node = vcp.get_main_id();
+
+        use program_structure::ast::SignalType::*;
+        let mut input_list = vec![];
+        for s in &vcp.templates[initial_node].signals {
+            if s.xtype == Input {
+                input_list.push((s.name.clone(), s.dag_local_id, s.size()));
+            }
+        }
+
+        let mut file = File::open(file)?;
+        file.write(&bincode::serialize(&InputMap(input_list)).unwrap())
+    };
+
+    let result = f(file, vcp);
+
+    if result.is_ok() {
+        println!("{} {}", Colour::Green.paint("Written successfully:"), file);
+        Ok(())
+    } else {
+        eprintln!(
+            "{}",
+            Colour::Red.paint("Could not write the output in the given path")
+        );
+        Err(())
     }
 }

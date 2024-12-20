@@ -43,6 +43,8 @@ fn start() -> Result<(), ()> {
         json_constraints: user_input.json_constraints_file().to_string(),
         json_substitutions: user_input.json_substitutions_file().to_string(),
         prime: user_input.prime(),
+        input_map: user_input.input_map_file().to_string(),
+        input_map_flag: user_input.input_map_flag(),
     };
     let circuit = execution_user::execute_project(program_archive, config)?;
     let compilation_config = CompilerConfig {

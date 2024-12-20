@@ -9,10 +9,12 @@ pub struct Input {
     pub out_c_folder: PathBuf,
     pub out_c_code: PathBuf,
     pub out_c_dat: PathBuf,
+    pub out_input_map: PathBuf,
     pub out_sym: PathBuf,
     pub c_flag: bool,
     pub r1cs_flag: bool,
     pub sym_flag: bool,
+    pub input_map_flag: bool,
     pub json_constraint_flag: bool,
     pub json_substitution_flag: bool,
     pub main_inputs_flag: bool,
@@ -33,6 +35,7 @@ const CPP: &'static str = "cpp";
 const DAT: &'static str = "dat";
 const SYM: &'static str = "sym";
 const JSON: &'static str = "json";
+const MAP: &'static str = "map";
 
 impl Input {
     pub fn new() -> Result<Input, ()> {
@@ -61,6 +64,7 @@ impl Input {
             out_c_code: Input::build_output(&output_c_path, &file_name, CPP),
             out_c_dat: Input::build_output(&output_c_path, &file_name, DAT),
             out_sym: Input::build_output(&output_path, &file_name, SYM),
+            out_input_map: Input::build_output(&output_path, &file_name, MAP),
             out_json_constraints: Input::build_output(
                 &output_path,
                 &format!("{}_constraints", file_name),
@@ -74,6 +78,7 @@ impl Input {
             c_flag: c_flag,
             r1cs_flag: input_processing::get_r1cs(&matches),
             sym_flag: input_processing::get_sym(&matches),
+            input_map_flag: input_processing::get_input_map(&matches),
             main_inputs_flag: input_processing::get_main_inputs_log(&matches),
             json_constraint_flag: input_processing::get_json_constraints(&matches),
             json_substitution_flag: input_processing::get_json_substitutions(&matches),
@@ -121,6 +126,10 @@ impl Input {
         self.out_sym.to_str().unwrap()
     }
 
+    pub fn input_map_file(&self) -> &str {
+        self.out_input_map.to_str().unwrap()
+    }
+
     pub fn c_folder(&self) -> &str {
         self.out_c_folder.to_str().unwrap()
     }
@@ -148,6 +157,9 @@ impl Input {
     }
     pub fn r1cs_flag(&self) -> bool {
         self.r1cs_flag
+    }
+    pub fn input_map_flag(&self) -> bool {
+        self.input_map_flag
     }
     pub fn json_constraints_flag(&self) -> bool {
         self.json_constraint_flag
@@ -264,6 +276,10 @@ mod input_processing {
 
     pub fn get_sym(matches: &ArgMatches) -> bool {
         matches.is_present("print_sym")
+    }
+
+    pub fn get_input_map(matches: &ArgMatches) -> bool {
+        matches.is_present("print_input_map")
     }
 
     pub fn get_r1cs(matches: &ArgMatches) -> bool {
@@ -413,6 +429,13 @@ mod input_processing {
                     .takes_value(false)
                     .display_order(30)
                     .help("Outputs the constraints in r1cs format"),
+            )
+            .arg(
+                Arg::with_name("print_input_map")
+                    .long("input_map")
+                    .takes_value(false)
+                    .display_order(40)
+                    .help("Outputs the input map"),
             )
             .arg(
                 Arg::with_name("link_libraries")
